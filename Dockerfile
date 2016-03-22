@@ -4,7 +4,7 @@ ENV TERM xterm
 
 ENV ADMIN "admin"
 ENV PASSWORD "admin"
-ENV ROOT "/dokuwiki"
+ENV ROOT "/"
 
 RUN apt-get update -y
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y debconf-utils apache2
