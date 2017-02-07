@@ -21,8 +21,8 @@ dokuwiki dokuwiki/wiki/license select gnufdl
 dokuwiki dokuwiki/wiki/policy select public
 dokuwiki dokuwiki/wiki/acl boolean true
 EOF
-    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-download dokuwiki
-    #dpkg-reconfigure -f noninteractive dokuwiki
+    #DEBIAN_FRONTEND=noninteractive apt-get install -y --no-download dokuwiki
+    dpkg-reconfigure -f noninteractive dokuwiki
     rm /firstrun
     echo "Dokuwiki Configured."
 fi
