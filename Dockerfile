@@ -9,8 +9,7 @@ ENV ROOT "/"
 
 RUN apt-get update -y
 RUN apt-get upgrade -y
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y debconf-utils apache2
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y dokuwiki graphviz default-jre-headless wget
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y debconf-utils apache2 libapache2-mod-php dokuwiki graphviz default-jre-headless wget
 RUN mkdir -p /var/lib/dokuwiki/lib/plugins/plantuml
 RUN wget -O/var/lib/dokuwiki/lib/plugins/plantuml/plantuml.jar 'http://downloads.sourceforge.net/project/plantuml/plantuml.jar?r=http%3A%2F%2Fplantuml.com%2Fdownload&ts=1480882003&use_mirror=netix'
 RUN chown -R www-data.www-data /var/lib/dokuwiki/lib/plugins
