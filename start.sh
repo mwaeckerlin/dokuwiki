@@ -1,34 +1,73 @@
-#!/bin/bash
+#!/bin/sh -e
 
-if test -e /firstrun; then
-    if test -z "${PASSWORD}"; then
-        echo "**** ERROR: set a password, use -e PASSWORD=YourPassWord" 1>&2
-        exit 1
-    fi
-    echo "Setting Up Dokuwiki ..."
-    debconf-set-selections <<EOF
-dokuwiki dokuwiki/wiki/superuser string ${ADMIN}
-dokuwiki dokuwiki/wiki/password password ${PASSWORD}
-dokuwiki dokuwiki/wiki/confirm password ${PASSWORD}
-dokuwiki dokuwiki/system/documentroot string ${ROOT}
-dokuwiki dokuwiki/system/configure-webserver multiselect apache2
-dokuwiki dokuwiki/system/writeplugins boolean true
-dokuwiki dokuwiki/system/writeconf boolean true
-dokuwiki dokuwiki/system/accessible select global
-dokuwiki dokuwiki/system/purgepages boolean false
-dokuwiki dokuwiki/system/restart-webserver boolean false
-dokuwiki dokuwiki/wiki/license select gnufdl
-dokuwiki dokuwiki/wiki/policy select public
-dokuwiki dokuwiki/wiki/acl boolean true
+# call option with parameters: $1=name $2=value $3=file
+function config() {
+    echo '---- configuring $conf['"'$1'] = $2; in ${3:-/dokuwiki/etc/local.php}"
+    name=${1//\//\\/}
+    value=${2//\//\\/}
+    sed -i \
+        -e '/^#\?\(\s*\$conf\['"'${name}'"'\]\s*=\s*\).*/{s//\1'"${value}"';/;:a;n;ba;q}' \
+        -e '$a$conf['"'${name}'"'] = '"${value};" ${3:-/dokuwiki/etc/local.php}
+}
+
+test -e /dokuwiki/etc/plugins.local.php || touch /dokuwiki/etc/plugins.local.php
+
+test -e /dokuwiki/etc/local.php || cat <<EOF > /dokuwiki/etc/local.php
+<?php
+\$conf['useacl'] = 1;
+\$conf['superuser'] = '@admin';
 EOF
-    #DEBIAN_FRONTEND=noninteractive apt-get install -y --no-download dokuwiki
-    dpkg-reconfigure -f noninteractive dokuwiki
-    rm /firstrun
-    echo "Dokuwiki Configured."
+
+test -e /dokuwiki/etc/acl.auth.php || cat <<EOF > /dokuwiki/etc/acl.auth.php
+# acl.auth.php
+# <?php exit()?>
+# Don't modify the lines above
+#
+# Access Control Lists
+#
+# Editing this file by hand shouldn't be necessary. Use the ACL
+# Manager interface instead.
+#
+# If your auth backend allows special char like spaces in groups
+# or user names you need to urlencode them (only chars <128, leave
+# UTF-8 multibyte chars as is)
+#
+# none   0
+# read   1
+# edit   2
+# create 4
+# upload 8
+# delete 16
+*               @ALL        0
+EOF
+
+test -e /dokuwiki/etc/users.auth.php || cat <<EOF > /dokuwiki/etc/users.auth.php
+# users.auth.php
+# <?php exit()?>
+# Don't modify the lines above
+#
+# Userfile
+#
+# Format:
+#
+# login:passwordhash:Real Name:email:groups,comma,separated
+EOF
+
+for file in pages attic media media_attic meta media_meta cache index locks tmp; do
+    test -e /dokuwiki/data/$file || mkdir /dokuwiki/data/$file
+done
+
+if test -n "${PASSWORD}" -a -n "${ADMIN}"; then
+    if ! egrep -qe "^${ADMIN}:" /dokuwiki/etc/users.auth.php; then
+        echo "---- configure initial admin user"
+        echo ${ADMIN}:$(mkpasswd -m md5 "$PASSWORD"):${NAME:-${ADMIN}}:${MAIL:-${ADMIN}@localhost}':admin,user' >> /dokuwiki/etc/users.auth.php
+        if ! egrep -qe '^ *\$conf['superuser'] *=' /dokuwiki/etc/local.php; then
+            config superuser "'@admin'"
+        fi
+    fi
 fi
 
-echo "see: http://localhost${ROOT}"
-if test -f /run/apache2/apache2.pid; then
-    rm /run/apache2/apache2.pid;
-fi;
-apache2ctl -DFOREGROUND
+test -z "${BASEURL}" || config baseurl "'${BASEURL}'"
+test -z "${BASEDIR}" || config basedir "'${BASEDIR}'"
+
+/start-php-fpm.sh
