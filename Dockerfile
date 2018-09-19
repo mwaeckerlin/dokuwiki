@@ -15,7 +15,7 @@ RUN mv /start.sh /start-php-fpm.sh \
  && mkdir -p "${WEB_ROOT_PATH}"/etc \
  && wget -qO- https://download.dokuwiki.org/src/dokuwiki/dokuwiki-stable.tgz \
     | tar xz --strip-components 1 -C "${WEB_ROOT_PATH}" \
- && chown -R ${WWWUSER}:${WWWGROUP} "${WEB_ROOT_PATH}"/conf "${WEB_ROOT_PATH}"/etc "${WEB_ROOT_PATH}"/data  \
+ && chown -R ${WWWUSER}:${WWWGROUP} "${WEB_ROOT_PATH}"/conf "${WEB_ROOT_PATH}"/etc "${WEB_ROOT_PATH}"/data "${WEB_ROOT_PATH}"/lib/plugins "${WEB_ROOT_PATH}"/lib/tpl  \
  && for file in local.php plugins.local.php acl.auth.php users.auth.php; do \
         path="${WEB_ROOT_PATH}"/conf/$file; \
         if test -e "$path"; then \
@@ -27,7 +27,7 @@ RUN mv /start.sh /start-php-fpm.sh \
         fi; \
         ln -s ../etc/$file "$path" || exit 1; \
     done \
- && apk add php-xml php-gd php-session php-json php-ldap
+ && apk add php-xml php-gd php-session php-json php-ldap php7-openssl graphviz
 ADD nginx.conf /etc/nginx/conf.d/default.conf
 ADD start.sh /start.sh
 USER ${WWWUSER}
