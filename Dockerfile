@@ -12,6 +12,7 @@ ENV CONTAINERNAME  "dokuwiki"
 ENV WEB_ROOT_PATH  "/dokuwiki"
 USER root
 RUN mv /start.sh /start-php-fpm.sh \
+ && mkdir "${WEB_ROOT_PATH}" \
  && wget -qO- https://download.dokuwiki.org/src/dokuwiki/dokuwiki-stable.tgz \
     | tar xz --strip-components 1 -C "${WEB_ROOT_PATH}" \
  && chown -R ${WWWUSER}:${WWWGROUP} "${WEB_ROOT_PATH}"/conf "${WEB_ROOT_PATH}"/data "${WEB_ROOT_PATH}"/lib/plugins "${WEB_ROOT_PATH}"/lib/tpl  \
