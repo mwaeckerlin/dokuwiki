@@ -19,7 +19,7 @@ RUN mv /start.sh /start-php-fpm.sh \
  && cp -a "${WEB_ROOT_PATH}"/conf "${WEB_ROOT_PATH}"/conf.dist \
  && cp -a "${WEB_ROOT_PATH}"/lib/plugins "${WEB_ROOT_PATH}"/lib/plugins.dist \
  && cp -a "${WEB_ROOT_PATH}"/lib/tpl "${WEB_ROOT_PATH}"/lib/tpl.dist \
- && apk add php-xml php-gd php-session php-json php-ldap php7-openssl graphviz
+ && apk add php-xml php-gd php-session php-json php-ldap php7-openssl graphviz rsync
 ADD nginx.conf /etc/nginx/conf.d/default.conf
 ADD start.sh /start.sh
 WORKDIR "${WEB_ROOT_PATH}"
