@@ -1,0 +1,25 @@
+version: "3.4"
+services:
+  dokuwiki:
+    image: mwaeckerlin/dokuwiki
+    ports:
+      - 8080:8080
+    volumes:
+      - type: volume
+        source: dokuwiki
+        target: /app
+        volume:
+          nocopy: false
+    build: .
+
+  php-fpm:
+    image: mwaeckerlin/php-fpm
+    volumes:
+      - type: volume
+        source: dokuwiki
+        target: /app
+        volume:
+          nocopy: true
+
+volumes:
+  dokuwiki:
